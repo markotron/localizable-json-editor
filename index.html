@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BBTMS</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.5.0/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="json"></div>
+<script type="text/javascript" src="./target/scala-2.12/bbtms-fastopt.js"></script>
+<script type="text/javascript" src="./target/scala-2.12/bbtms-jsdeps.js"></script>
+
+<script type="text/javascript">
+    if (typeof window !== 'undefined') {
+        window.React = React;
+    }
+    Main().main();
+</script>
+
+</body>
+</html>

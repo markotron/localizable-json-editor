@@ -1,0 +1,48 @@
+#json {
+    font-family: Monaco, Consolas, "Andale Mono", "DejaVu Sans Mono", monospace;
+    /*font-family: "Courier 10 Pitch", Courier, monospace;*/
+    font-size: 13px;
+    line-height: 180%;
+    white-space: pre;
+    white-space: pre-wrap;
+    white-space: -moz-pre-wrap;
+    white-space: -o-pre-wrap;
+}
+
+.object-div {
+    border-left: 1px dotted deepskyblue;
+    margin-left: 6px;
+    padding-left: 14px;
+}
+
+.leaf-div {
+    border-left: 1px dotted deepskyblue;
+    margin-left: 6px;
+    padding-left: 14px;
+}
+
+.key-span {
+    margin-left: 10px;
+    margin-right: 10px;
+}
+
+.modify-buttons-span {
+
+}
+
+.fa {
+    cursor: pointer;
+    color: deepskyblue;
+}
+
+.json-with-key-div label > .fa.fa-trash {
+    visibility: hidden;
+}
+
+.json-with-key-div label:hover > .fa.fa-trash {
+    visibility: visible;
+}
+
+.hidden {
+    display: none;
+}
