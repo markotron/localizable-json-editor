@@ -9,7 +9,7 @@ import japgolly.scalajs.react.raw.Props
 import scala.scalajs.js.JSApp
 import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom.document
-import tms.component.{JsonBackend, JsonProperties, MainBackend}
+import tms.component.{JsonBackend, JsonProperties, MainBackend, MainState}
 import tms.model.{LocalizableJson, LocalizableNull, LocalizableObject, LocalizableString}
 
 /**
@@ -42,12 +42,12 @@ object Main extends JSApp {
   }
 
   override def main(): Unit = {
-    val Comp = react.ScalaComponent.build[Unit]("Main component")
-      .initialState(sampleJson)
+    val Comp = react.ScalaComponent.build[List[String]]("main")
+      .initialState(MainState(sampleJson, List(sampleJson)))
       .renderBackend[MainBackend]
       .build
 
-    Comp().renderIntoDOM(document.getElementById("json"))
+    Comp(List("en", "de")).renderIntoDOM(document.getElementById("json"))
 
   }
 }

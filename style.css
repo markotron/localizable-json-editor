@@ -26,10 +26,6 @@
     margin-right: 10px;
 }
 
-.modify-buttons-span {
-
-}
-
 .fa {
     cursor: pointer;
     color: deepskyblue;
@@ -45,4 +41,9 @@
 
 .hidden {
     display: none;
+}
+
+.edited-span {
+    margin-left: 20px;
+    font-size: 80%;
 }

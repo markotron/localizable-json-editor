@@ -1,10 +1,8 @@
 package tms.component
 
 import japgolly.scalajs.react
-import japgolly.scalajs.react.Callback
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.vdom.html_<^._
-import tms.model.LocalizableJson
 
 /**
   * Created by markotron on 19/03/2017.
@@ -15,12 +13,6 @@ case class JsonWithKeyProperty(key: String, jsonProp: JsonProperties)
 case class JsonWithKeyState(isExpanded: Boolean)
 
 class JsonWithKeyBackend(bs: BackendScope[JsonWithKeyProperty, JsonWithKeyState]) {
-
-//  val JsonComp = react.ScalaComponent
-//    .build[JsonProperties]("Json component")
-//    .initialState(JsonState(true))
-//    .renderBackend[JsonBackend]
-//    .build
 
   def toggleHidden =
     bs.modState(s => JsonWithKeyState(!s.isExpanded))
