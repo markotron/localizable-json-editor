@@ -12,24 +12,24 @@ import scala.collection.mutable
 /**
   * Created by markotron on 19/03/2017.
   */
-case class MainState(json: LocalizableJson, history: List[LocalizableJson]) {
-  def undo = MainState(history(1), history.tail)
+case class MainState(history: List[LocalizableJson]) {
+  def undo = MainState(history.tail)
 }
 
 class MainBackend(bs: BackendScope[List[String], MainState]) {
 
   def onDelete(json: LocalizableJson): Callback =
     bs.modState { s =>
-      val newRoot = s.json.deleteElement(json)
+      val newRoot = s.history.head.deleteElement(json)
       val newHistory = newRoot :: s.history
-      MainState(newRoot, newHistory)
+      MainState(newHistory)
     }
 
   def onUpdate(oldJson: LocalizableJson, newJson: LocalizableJson): Callback =
     bs.modState { s =>
-      val newRoot = s.json.upsertElement(oldJson, newJson)
+      val newRoot = s.history.head.upsertElement(oldJson, newJson)
       val newHistory = newRoot :: s.history
-      MainState(newRoot, newHistory)
+      MainState(newHistory)
     }
 
   def undo: Callback =
@@ -52,7 +52,7 @@ class MainBackend(bs: BackendScope[List[String], MainState]) {
       ),
       JsonComponent(
         JsonProperties(
-          state.json,
+          state.history.head,
           prop,
           onDelete,
           onUpdate

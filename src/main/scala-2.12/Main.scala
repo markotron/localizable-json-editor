@@ -23,6 +23,9 @@ object Main extends JSApp {
       """
         |{
         |   "ime" : "Marko",
+        |   "osoba" : {
+        |     "ime" : "kajo"
+        |    },
         |   "prezime" : "Bozic",
         |   "adresa" : {
         |     "ulica" : "Set V Gortana",
@@ -43,11 +46,11 @@ object Main extends JSApp {
 
   override def main(): Unit = {
     val Comp = react.ScalaComponent.build[List[String]]("main")
-      .initialState(MainState(sampleJson, List(sampleJson)))
+      .initialState(MainState(List(sampleJson)))
       .renderBackend[MainBackend]
       .build
 
-    Comp(List("en", "de")).renderIntoDOM(document.getElementById("json"))
+    Comp(List("en" )).renderIntoDOM(document.getElementById("json"))
 
   }
 }

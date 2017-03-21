@@ -47,3 +47,16 @@
     margin-left: 20px;
     font-size: 80%;
 }
+
+.text-input {
+    border: none;
+    border-bottom: 1px gray solid;
+}
+
+.text-input:focus {
+    outline: none;
+}
+
+.text-edited-input {
+    background-color: #e7f5fe;
+}

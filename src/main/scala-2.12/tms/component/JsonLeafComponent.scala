@@ -13,17 +13,26 @@ case class JsonLeafProperties(json: LocalizableJson,
                               langs: List[String],
                               onUpdate: (LocalizableJson, LocalizableJson) => Callback)
 
-case class JsonLeafState(content: Map[String, String]) {
-  def updateLang(lang: String, text: String) = JsonLeafState(content.updated(lang, text))
+case class JsonLeafState(content: Map[String, String], changed: Map[String, Boolean]) {
+  def updateContent(lang: String, text: String) = JsonLeafState(content.updated(lang, text), changed)
+
+  def updateChanged(lang: String, state: Boolean) = JsonLeafState(content, changed.updated(lang, state))
 }
 
 class JsonLeafBackend(val bs: BackendScope[JsonLeafProperties, JsonLeafState]) {
 
+  def didChange(lang: String, text: String, prop: JsonLeafProperties) = {
+    val persistedText = prop.json.value.getOrElse(lang, "").toString
+    if (text == persistedText) false else true
+  }
 
-  def onChange(event: ReactEventFromInput): Callback = {
+  def onChange(prop: JsonLeafProperties)(event: ReactEventFromInput): Callback = {
     val lang = event.target.name
     val text = event.target.value
-    bs.modState(s => s.updateLang(lang, text))
+    bs.modState { s =>
+      val newState = if (didChange(lang, text, prop)) s.updateChanged(lang, true) else s.updateChanged(lang, false)
+      newState.updateContent(lang, text)
+    }
   }
 
   def onKeyUp(prop: JsonLeafProperties, state: JsonLeafState)(event: ReactKeyboardEventFromInput): Callback = {
@@ -33,15 +42,9 @@ class JsonLeafBackend(val bs: BackendScope[JsonLeafProperties, JsonLeafState]) {
       LocalizableString(state.content)
     }
 
-    def didChange = {
-      val lang = event.target.name
-      val text = event.target.value.trim
-
-      val persistedText = prop.json.value.getOrElse(lang, "").toString.trim
-      if (text == persistedText) false else true
-    }
-
-    if (event.keyCode == 13 && didChange)
+    val lang = event.target.name
+    val text = event.target.value.trim
+    if (event.keyCode == 13 && didChange(lang, text, prop))
       prop.onUpdate(prop.json, createJsonLeaf)
     else Callback.empty
   }
@@ -54,10 +57,13 @@ class JsonLeafBackend(val bs: BackendScope[JsonLeafProperties, JsonLeafState]) {
         <.div(
           <.label(l + ": "),
           <.input(
+            ^.classSet(
+              "text-input" -> true,
+              "text-edited-input" -> state.changed.getOrElse(l, false)),
             ^.name := l,
             ^.`type` := "text",
             ^.value := state.content.getOrElse(l, ""),
-            ^.onChange ==> onChange,
+            ^.onChange ==> onChange(prop),
             ^.onKeyUp ==> onKeyUp(prop, state))
         )
       ): _*
@@ -70,12 +76,12 @@ object JsonLeafComponent {
 
   val Comp = ScalaComponent
     .build[JsonLeafProperties]("json-leaf")
-    .initialState(JsonLeafState(Map()))
+    .initialState(JsonLeafState(Map(), Map()))
     .renderBackend[JsonLeafBackend]
     .componentDidMount { f =>
       val props = f.props
       val strMap = props.json.value.map { case (k, v) => (k, v.toString) }
-      f.backend.bs.modState(s => JsonLeafState(strMap))
+      f.backend.bs.modState(s => JsonLeafState(strMap, Map()))
     }
     .build
 
