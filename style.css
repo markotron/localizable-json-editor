@@ -7,6 +7,8 @@
     white-space: pre-wrap;
     white-space: -moz-pre-wrap;
     white-space: -o-pre-wrap;
+    float: left;
+    margin-bottom: 20px;
 }
 
 .object-div {
@@ -59,4 +61,40 @@
 
 .text-edited-input {
     background-color: #e7f5fe;
+}
+
+.type-tag-span {
+    margin-left: 5px;
+    display: inline-block;
+    max-width: 100px;
+    line-height: 13px;
+    padding: 0 4px;
+    background-color: deepskyblue;
+    /*border: 1px solid #aaa;*/
+    border-radius: 3px;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /*overflow: hidden;*/
+    color: white;
+    font-size: 9px;
+    text-decoration: none;
+}
+.type-tag-span.red {
+    background-color: #E30059;
+}
+
+.type-tag-span.orange {
+    background-color: #F7840E;
+}
+
+.type-tag-span.green {
+    background-color: #68B603;
+}
+
+.type-tag-span.blue {
+    background-color: #009dd2;
+}
+
+.type-tag-span.purple {
+    background-color: #86377B;
 }

@@ -20,16 +20,18 @@ class MainBackend(bs: BackendScope[List[String], MainState]) {
 
   def onDelete(json: LocalizableJson): Callback =
     bs.modState { s =>
-      val newRoot = s.history.head.deleteElement(json)
-      val newHistory = newRoot :: s.history
-      MainState(newHistory)
+      s.history.headOption
+        .map(_.deleteElement(json))
+        .map(h => MainState(h :: s.history))
+        .getOrElse(s)
     }
 
   def onUpdate(oldJson: LocalizableJson, newJson: LocalizableJson): Callback =
     bs.modState { s =>
-      val newRoot = s.history.head.upsertElement(oldJson, newJson)
-      val newHistory = newRoot :: s.history
-      MainState(newHistory)
+      s.history.headOption
+        .map(_.upsertElement(oldJson, newJson))
+        .map(h => MainState(h :: s.history))
+        .getOrElse(s)
     }
 
   def undo: Callback =
@@ -60,3 +62,4 @@ class MainBackend(bs: BackendScope[List[String], MainState]) {
       )
     )
 }
+

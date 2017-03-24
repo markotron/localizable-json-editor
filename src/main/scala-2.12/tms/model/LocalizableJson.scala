@@ -6,8 +6,6 @@ import tms.importer.JsonImporter
 import tms.exporter.JsonStringExporter
 
 import scala.scalajs.js
-import scala.util.{Failure, Success, Try}
-
 /**
   * Immutable rich json structure. Rich means that has it has native
   * support for many tipes that json hasn't (not right now :):
@@ -54,7 +52,9 @@ sealed trait LocalizableJson {
     */
   def upsertElement(path: Path, el: LocalizableJson): LocalizableJson
 
-  def upsertElement(root: LocalizableJson, el: LocalizableJson, maybeKey: Option[String] = None): LocalizableJson
+  def upsertElement(root: LocalizableJson,
+                    el: LocalizableJson,
+                    maybeKey: Option[String] = None): LocalizableJson
 
   /**
     * Deletes the element on a given path. If the path does not exists the
@@ -70,14 +70,15 @@ sealed trait LocalizableJson {
 
 object LocalizableJson {
   def stringify(json: LocalizableJson, lang: String)(
-    filter: (String, LocalizableJson) => Boolean): String =
+      filter: (String, LocalizableJson) => Boolean): String =
     JsonStringExporter.stringify(json, lang)(filter)
 
   def stringify(json: LocalizableJson, lang: String, space: Int)(
-    filter: (String, LocalizableJson) => Boolean): String =
+      filter: (String, LocalizableJson) => Boolean): String =
     JsonStringExporter.stringify(json, lang, space)(filter)
 
-  def prettify(json: LocalizableJson, lang: String): String = stringify(json, lang, 4)((_, _) => true)
+  def prettify(json: LocalizableJson, lang: String): String =
+    stringify(json, lang, 4)((_, _) => true)
 
   def apply(json: js.Dynamic)(implicit locale: String): LocalizableJson =
     JsonImporter.importJson(json)(List())
@@ -92,8 +93,9 @@ object LocalizableJson {
   * @param value underlying structure
   * @param id    object id -- if you want to manually set the id you can!
   */
-case class LocalizableObject(value: Map[String, LocalizableJson], id: String = UUID.randomUUID().toString)
-  extends LocalizableJson {
+case class LocalizableObject(value: Map[String, LocalizableJson],
+                             id: String = UUID.randomUUID().toString)
+    extends LocalizableJson {
 
   /**
     * If the key does not exist in the current structre adds the <code>(key, e)</code>!
@@ -134,10 +136,11 @@ case class LocalizableObject(value: Map[String, LocalizableJson], id: String = U
       vs.foldLeft[Option[Path]](None)(operation)
 
     if (this eq el) Some(Nil)
-    else this match {
-      case LocalizableObject(v, _) => findInList(v.toList)
-      case _ => None
-    }
+    else
+      this match {
+        case LocalizableObject(v, _) => findInList(v.toList)
+        case _ => None
+      }
 
   }
 
@@ -161,11 +164,13 @@ case class LocalizableObject(value: Map[String, LocalizableJson], id: String = U
       case Nil => el
       case key :: rest =>
         createUpdatedObject(key,
-          getOrCreateObject(key).upsertElement(rest, el))
+                            getOrCreateObject(key).upsertElement(rest, el))
     }
   }
 
-  override def upsertElement(root: LocalizableJson, el: LocalizableJson, maybeKey: Option[String] = None) =
+  override def upsertElement(root: LocalizableJson,
+                             el: LocalizableJson,
+                             maybeKey: Option[String] = None) =
     getPath(root)
       .map(_ ::: maybeKey.map(List(_)).getOrElse(Nil))
       .map(upsertElement(_, el))
@@ -182,7 +187,9 @@ case class LocalizableObject(value: Map[String, LocalizableJson], id: String = U
     }
 
   override def deleteElement(el: LocalizableJson) =
-    getPath(el).map(deleteElement(_)).getOrElse(throw new NoSuchElementException)
+    getPath(el)
+      .map(deleteElement(_))
+      .getOrElse(throw new NoSuchElementException)
 }
 
 /**
@@ -212,7 +219,9 @@ sealed abstract class LocalizableLeaf extends LocalizableJson {
     }
   }
 
-  override def upsertElement(root: LocalizableJson, el: LocalizableJson, maybeKey: Option[String] = None) =
+  override def upsertElement(root: LocalizableJson,
+                             el: LocalizableJson,
+                             maybeKey: Option[String] = None) =
     if (maybeKey.isDefined)
       throw new Exception(s"[$this] You'are messing with types!")
     else if (this eq root) el
@@ -233,20 +242,23 @@ sealed abstract class LocalizableLeaf extends LocalizableJson {
 /*
         LEAF NODE LIST
  */
-case class LocalizableString(value: Map[String, String], id: String = UUID.randomUUID().toString)
-  extends LocalizableLeaf
+case class LocalizableString(value: Map[String, String],
+                             id: String = UUID.randomUUID().toString)
+    extends LocalizableLeaf
 
-case class LocalizableInt(value: Map[String, Int], id: String = UUID.randomUUID().toString) extends LocalizableLeaf
+case class LocalizableInt(value: Map[String, Int],
+                          id: String = UUID.randomUUID().toString)
+    extends LocalizableLeaf
 
-case class LocalizableDouble(value: Map[String, Double], id: String = UUID.randomUUID().toString)
-  extends LocalizableLeaf
+case class LocalizableDouble(value: Map[String, Double],
+                             id: String = UUID.randomUUID().toString)
+    extends LocalizableLeaf
 
-case class LocalizableBoolean(value: Map[String, Boolean], id: String = UUID.randomUUID().toString)
-  extends LocalizableLeaf
+case class LocalizableBoolean(value: Map[String, Boolean],
+                              id: String = UUID.randomUUID().toString)
+    extends LocalizableLeaf
 
-case object LocalizableNull
-  extends LocalizableLeaf {
+case object LocalizableNull extends LocalizableLeaf {
   val id = "null"
   val value: Map[String, Nothing] = Map()
 }
-

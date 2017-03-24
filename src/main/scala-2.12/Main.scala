@@ -10,7 +10,7 @@ import scala.scalajs.js.JSApp
 import japgolly.scalajs.react.vdom.html_<^._
 import org.scalajs.dom.document
 import tms.component.{JsonBackend, JsonProperties, MainBackend, MainState}
-import tms.model.{LocalizableJson, LocalizableNull, LocalizableObject, LocalizableString}
+import tms.model._
 
 /**
   * Created by markotron on 11/03/2017.
@@ -41,7 +41,28 @@ object Main extends JSApp {
         |}
       """.stripMargin
 
-    LocalizableJson(jsonString)("en")
+    val jsonString1 =
+      """
+        |{
+        |   "vjezbe" : {
+        |     "vj1" : {
+        |       "naziv" : "disanje",
+        |       "trajanje" : 2,
+        |       "metadata" : {
+        |         "waveParam" : 12,
+        |         "boolean" : true,
+        |         "config" : 7
+        |       }
+        |     },
+        |     "vj2" : { "naziv" : "inner peace", "trajanje" : 12 },
+        |     "vj3" : { "naziv" : "body scan", "trajanje" : 11 },
+        |     "vj4" : { "naziv" : "molitva", "trajanje" : 13 },
+        |     "vj5" : { "naziv" : "hejtanje", "trajanje" : 15 }
+        |   }
+        |}
+      """.stripMargin
+
+    LocalizableJson(jsonString1)("en")
   }
 
   override def main(): Unit = {
@@ -50,7 +71,6 @@ object Main extends JSApp {
       .renderBackend[MainBackend]
       .build
 
-    Comp(List("en" )).renderIntoDOM(document.getElementById("json"))
-
+    Comp(List("en", "de")).renderIntoDOM(document.getElementById("json"))
   }
 }
