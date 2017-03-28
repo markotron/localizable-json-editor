@@ -69,15 +69,22 @@
     max-width: 100px;
     line-height: 13px;
     padding: 0 4px;
-    background-color: deepskyblue;
-    /*border: 1px solid #aaa;*/
+    /*background-color: deepskyblue;*/
+    border: 1px solid deepskyblue;
     border-radius: 3px;
     white-space: nowrap;
     text-overflow: ellipsis;
     /*overflow: hidden;*/
-    color: white;
+    color: deepskyblue;
     font-size: 9px;
     text-decoration: none;
+    cursor: pointer;
+}
+
+.type-tag-span-selected {
+    background-color: deepskyblue;
+    color: white;
+    cursor: default;
 }
 .type-tag-span.red {
     background-color: #E30059;

@@ -246,9 +246,9 @@ case class LocalizableString(value: Map[String, String],
                              id: String = UUID.randomUUID().toString)
     extends LocalizableLeaf
 
-case class LocalizableInt(value: Map[String, Int],
-                          id: String = UUID.randomUUID().toString)
-    extends LocalizableLeaf
+//case class LocalizableInt(value: Map[String, Int],
+//                          id: String = UUID.randomUUID().toString)
+//    extends LocalizableLeaf
 
 case class LocalizableDouble(value: Map[String, Double],
                              id: String = UUID.randomUUID().toString)

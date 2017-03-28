@@ -31,7 +31,6 @@ object JsonStringExporter {
       case LocalizableString(value, _) =>
         stringifyLeaf(a => s""""$a"""")(value)
       case LocalizableDouble(value, _) => stringifyLeaf(semiIdentity)(value)
-      case LocalizableInt(value, _) => stringifyLeaf(semiIdentity)(value)
       case LocalizableBoolean(value, _) => stringifyLeaf(semiIdentity)(value)
       case LocalizableNull => "null"
 

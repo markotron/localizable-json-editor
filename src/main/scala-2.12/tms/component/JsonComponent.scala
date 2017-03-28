@@ -6,7 +6,6 @@ import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.vdom.VdomElement
 import japgolly.scalajs.react.vdom.html_<^._
 import tms.model.{
-  LocalizableInt,
   LocalizableJson,
   LocalizableObject,
   LocalizableString

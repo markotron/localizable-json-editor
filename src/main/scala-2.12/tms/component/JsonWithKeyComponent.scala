@@ -1,6 +1,7 @@
 package tms.component
 
 import japgolly.scalajs.react
+import japgolly.scalajs.react.Callback
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.vdom.html_<^._
 import tms.model._
@@ -10,31 +11,55 @@ import tms.model._
   */
 case class JsonWithKeyProperty(key: String, jsonProp: JsonProperties)
 
-case class JsonWithKeyState(potentialTypes: List[Class[_ <: LocalizableJson]],
+case class JsonWithKeyState(currentType: Class[_ <: LocalizableJson],
+                            potentialTypes: List[Class[_ <: LocalizableJson]],
                             isExpanded: Boolean)
 
 class JsonWithKeyBackend(
     bs: BackendScope[JsonWithKeyProperty, JsonWithKeyState]) {
 
   val S = classOf[LocalizableString]
-  val I = classOf[LocalizableInt]
   val D = classOf[LocalizableDouble]
   val B = classOf[LocalizableBoolean]
   val O = classOf[LocalizableObject]
 
-  private def getTypeTag(`type`: Class[_ <: LocalizableJson]) = {
+  def changeCurrentType(`type`:Class[_ <: LocalizableJson]): Callback =
+    bs.modState( s => s.copy(currentType = `type`))
+
+  private def getTypeTag(state: JsonWithKeyState)(
+      `type`: Class[_ <: LocalizableJson]) = {
 
     `type` match {
-      case S => <.span(^.className := "type-tag-span", "string")
-      case I => <.span(^.className := "type-tag-span", "number")
-      case D => <.span(^.className := "type-tag-span", "number")
-      case B => <.span(^.className := "type-tag-span", "boolean")
-      case O => <.span(^.className := "type-tag-span", "object")
+      case S =>
+        <.span(
+          ^.classSet("type-tag-span" -> true,
+                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(S),
+          "string")
+      case D =>
+        <.span(
+          ^.classSet("type-tag-span" -> true,
+                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(D),
+          "number")
+      case B =>
+        <.span(
+          ^.classSet("type-tag-span" -> true,
+                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(B),
+          "boolean")
+      case O =>
+        <.span(
+          ^.classSet("type-tag-span" -> true,
+                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(O),
+          "object")
     }
   }
 
   def toggleHidden =
-    bs.modState(s => JsonWithKeyState(s.potentialTypes, !s.isExpanded))
+    bs.modState(s =>
+      JsonWithKeyState(s.currentType, s.potentialTypes, !s.isExpanded))
 
   def render(prop: JsonWithKeyProperty, state: JsonWithKeyState) = {
 
@@ -55,7 +80,7 @@ class JsonWithKeyBackend(
               case O => false
               case _ => true
             }
-            .map(getTypeTag): _*),
+            .map(getTypeTag(state)): _*),
         <.i(^.className := "fa fa-trash",
             ^.onClick --> jsonProp.onDelete(json))
       ),
@@ -65,6 +90,7 @@ class JsonWithKeyBackend(
           JsonLeafComponent(
             JsonLeafProperties(
               json,
+              state.currentType,
               jsonProp.langs,
               jsonProp.onUpdate,
               types => bs.modState(s => s.copy(potentialTypes = types))))
@@ -76,8 +102,16 @@ class JsonWithKeyBackend(
 object JsonWithKeyComponent {
   val Comp = react.ScalaComponent
     .build[JsonWithKeyProperty]("json-with-key")
-    .initialState(JsonWithKeyState(List(classOf[LocalizableObject]), true))
+    .initialState(
+      JsonWithKeyState(classOf[LocalizableObject],
+                       List(classOf[LocalizableObject]),
+                       true))
     .renderBackend[JsonWithKeyBackend]
+    .componentWillMount { f =>
+      val json = f.props.jsonProp.json
+      f.modState(s =>
+        JsonWithKeyState(json.getClass, s.potentialTypes, s.isExpanded))
+    }
     .build
 
   def apply(prop: JsonWithKeyProperty) =
