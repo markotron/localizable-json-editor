@@ -5,11 +5,7 @@ import japgolly.scalajs.react.Callback
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.vdom.VdomElement
 import japgolly.scalajs.react.vdom.html_<^._
-import tms.model.{
-  LocalizableJson,
-  LocalizableObject,
-  LocalizableString
-}
+import tms.model.{LocalizableJson, LocalizableObject}
 
 /**
   * Created by markotron on 19/03/2017.
@@ -18,16 +14,16 @@ case class JsonProperties(
     json: LocalizableJson,
     langs: List[String],
     onDelete: (LocalizableJson) => Callback,
-    onUpdate: (LocalizableJson, LocalizableJson) => Callback) {
+    onUpdate: (LocalizableJson, LocalizableJson) => Callback,
+    onAdd: (LocalizableJson, String, LocalizableJson) => Callback
+) {
 
-  def updateJson(j: LocalizableJson) = this.copy(json = j)
+  def updateJson(j: LocalizableJson): JsonProperties = this.copy(json = j)
 }
 
-case class JsonState(isExpanded: Boolean)
+class JsonBackend(bs: BackendScope[JsonProperties, Unit]) {
 
-class JsonBackend(bs: BackendScope[JsonProperties, JsonState]) {
-
-  def render(prop: JsonProperties, state: JsonState): VdomElement = {
+  def render(prop: JsonProperties): VdomElement = {
 
     prop.json match {
 
@@ -54,9 +50,8 @@ class JsonBackend(bs: BackendScope[JsonProperties, JsonState]) {
 
 object JsonComponent {
 
-  val Comp = react.ScalaComponent
+  private val Comp = react.ScalaComponent
     .build[JsonProperties]("json")
-    .initialState(JsonState(true))
     .renderBackend[JsonBackend]
     .build
 

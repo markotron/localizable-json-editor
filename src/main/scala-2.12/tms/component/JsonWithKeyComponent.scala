@@ -13,55 +13,68 @@ case class JsonWithKeyProperty(key: String, jsonProp: JsonProperties)
 
 case class JsonWithKeyState(currentType: Class[_ <: LocalizableJson],
                             potentialTypes: List[Class[_ <: LocalizableJson]],
+                            addingNew: Boolean,
                             isExpanded: Boolean)
 
 class JsonWithKeyBackend(
     bs: BackendScope[JsonWithKeyProperty, JsonWithKeyState]) {
 
-  val S = classOf[LocalizableString]
-  val D = classOf[LocalizableDouble]
-  val B = classOf[LocalizableBoolean]
-  val O = classOf[LocalizableObject]
+  import tms.model.pimp.RichLocalizableJson
 
-  def changeCurrentType(`type`:Class[_ <: LocalizableJson]): Callback =
-    bs.modState( s => s.copy(currentType = `type`))
+  def changeCurrentType(`type`: Class[_ <: LocalizableJson]): Callback =
+    bs.modState(s => s.copy(currentType = `type`))
 
   private def getTypeTag(state: JsonWithKeyState)(
       `type`: Class[_ <: LocalizableJson]) = {
 
     `type` match {
-      case S =>
+      case RichLocalizableJson.S =>
         <.span(
-          ^.classSet("type-tag-span" -> true,
-                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
-          ^.onClick --> changeCurrentType(S),
-          "string")
-      case D =>
+          ^.classSet(
+            "type-tag-span" -> true,
+            "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(RichLocalizableJson.S),
+          "string"
+        )
+      case RichLocalizableJson.D =>
         <.span(
-          ^.classSet("type-tag-span" -> true,
-                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
-          ^.onClick --> changeCurrentType(D),
-          "number")
-      case B =>
+          ^.classSet(
+            "type-tag-span" -> true,
+            "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(RichLocalizableJson.D),
+          "number"
+        )
+      case RichLocalizableJson.B =>
         <.span(
-          ^.classSet("type-tag-span" -> true,
-                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
-          ^.onClick --> changeCurrentType(B),
-          "boolean")
-      case O =>
+          ^.classSet(
+            "type-tag-span" -> true,
+            "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(RichLocalizableJson.B),
+          "boolean"
+        )
+      case RichLocalizableJson.O =>
         <.span(
-          ^.classSet("type-tag-span" -> true,
-                     "type-tag-span-selected" -> state.currentType.equals(`type`)),
-          ^.onClick --> changeCurrentType(O),
-          "object")
+          ^.classSet(
+            "type-tag-span" -> true,
+            "type-tag-span-selected" -> state.currentType.equals(`type`)),
+          ^.onClick --> changeCurrentType(RichLocalizableJson.O),
+          "object"
+        )
     }
   }
 
   def toggleHidden =
-    bs.modState(s =>
-      JsonWithKeyState(s.currentType, s.potentialTypes, !s.isExpanded))
+    bs.modState(
+      s =>
+        JsonWithKeyState(s.currentType,
+                         s.potentialTypes,
+                         s.addingNew,
+                         !s.isExpanded))
 
-  def render(prop: JsonWithKeyProperty, state: JsonWithKeyState) = {
+  def toggleAddNewForm =
+    bs.modState(s => s.copy(addingNew = !s.addingNew))
+
+  def render(prop: JsonWithKeyProperty, state: JsonWithKeyState): VdomElement = {
 
     val jsonProp = prop.jsonProp
     val json = jsonProp.json
@@ -77,13 +90,29 @@ class JsonWithKeyBackend(
         <.span(^.className := "key-span", prop.key)(
           state.potentialTypes
             .filter {
-              case O => false
+              case RichLocalizableJson.O => false
               case _ => true
             }
             .map(getTypeTag(state)): _*),
-        <.i(^.className := "fa fa-trash",
-            ^.onClick --> jsonProp.onDelete(json))
+        <.span(^.className := "buttons-span")(
+          <.i(^.className := "fa fa-trash",
+              ^.onClick --> jsonProp.onDelete(json)),
+          json match {
+            case _ : LocalizableObject =>
+              <.i(^.classSet(
+                    "fa fa-plus" -> !state.addingNew,
+                    "fa fa-minus" -> state.addingNew
+                  ),
+                  ^.onClick --> toggleAddNewForm)
+            case _ => <.i
+          }
+        )
       ),
+      JsonAddComponent(
+        JsonAddProperties(json,
+                          jsonProp.onAdd,
+                          toggleAddNewForm,
+                          !state.addingNew)),
       <.div(^.classSet("hidden" -> !state.isExpanded))(json match {
         case _: LocalizableObject => JsonComponent(jsonProp)
         case _ =>
@@ -105,12 +134,17 @@ object JsonWithKeyComponent {
     .initialState(
       JsonWithKeyState(classOf[LocalizableObject],
                        List(classOf[LocalizableObject]),
+                       false,
                        true))
     .renderBackend[JsonWithKeyBackend]
     .componentWillMount { f =>
       val json = f.props.jsonProp.json
-      f.modState(s =>
-        JsonWithKeyState(json.getClass, s.potentialTypes, s.isExpanded))
+      f.modState(
+        s =>
+          JsonWithKeyState(json.getClass,
+                           s.potentialTypes,
+                           s.addingNew,
+                           s.isExpanded))
     }
     .build
 

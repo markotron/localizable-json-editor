@@ -5,7 +5,7 @@ import japgolly.scalajs.react.Callback
 import japgolly.scalajs.react.component.Scala.BackendScope
 import japgolly.scalajs.react.vdom.html_<^._
 import tms.model._
-
+import tms.model.pimp.RichLocalizableJson
 import tms.model.pimp.RichLocalizableJson._
 
 /**
@@ -22,7 +22,9 @@ case class JsonLeafStateValue(content: String, touched: Boolean)
 
 case class JsonLeafState(langState: Map[String, JsonLeafStateValue]) {
 
-  def isTouched: Boolean = langState.map(_._2.touched).reduce(_ || _)
+  def isTouched: Boolean =
+    if (langState.isEmpty) false
+    else langState.map(_._2.touched).reduce(_ || _)
 
   def updateContent(prop: JsonLeafProperties)(lang: String, text: String) =
     langState
@@ -49,7 +51,7 @@ case class JsonLeafState(langState: Map[String, JsonLeafStateValue]) {
 
   def getPotentialTypes = {
     val NumberRegex = """[-+]?[0-9]*\.?[0-9]*""".r
-    val BooleanRegex = """(true|false|0|1)?""".r
+    val BooleanRegex = """(true|false|TRUE|FALSE)?""".r
     val StringRegex = ".*".r
 
     val regexs =
@@ -57,12 +59,15 @@ case class JsonLeafState(langState: Map[String, JsonLeafStateValue]) {
           BooleanRegex -> classOf[LocalizableBoolean],
           StringRegex -> classOf[LocalizableString])
 
-    langState
+    if(langState.isEmpty)
+      List(RichLocalizableJson.D, RichLocalizableJson.B, RichLocalizableJson.S)
+    else
+      langState
       .map(_._2.content) // list of texts in different languages
       .map((_, regexs)) // pairs (text, List(NumberRegex...)
       .map {
         case (t, rs) =>
-          rs.filter(r => r._1.pattern.matcher(t).matches).map(r => r._2).toSet
+          rs.filter(r => r._1.pattern.matcher(t).matches).values.toSet
       } // list of sets of classes <: LocalizableJson
       .reduce((s1, s2) => s1.intersect(s2))
       .toList
@@ -130,7 +135,6 @@ class JsonLeafBackend(val bs: BackendScope[JsonLeafProperties, JsonLeafState]) {
         )): _*
     )
   }
-
 }
 
 object JsonLeafComponent {

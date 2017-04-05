@@ -33,11 +33,15 @@
     color: deepskyblue;
 }
 
-.json-with-key-div label > .fa.fa-trash {
+.buttons-span .fa {
+    margin-right: 5px;
+}
+
+.json-with-key-div label > .buttons-span {
     visibility: hidden;
 }
 
-.json-with-key-div label:hover > .fa.fa-trash {
+.json-with-key-div label:hover > .buttons-span {
     visibility: visible;
 }
 
@@ -53,6 +57,7 @@
 .text-input {
     border: none;
     border-bottom: 1px gray solid;
+    background-color: transparent;
 }
 
 .text-input:focus {
@@ -105,3 +110,11 @@
 .type-tag-span.purple {
     background-color: #86377B;
 }
+
+.add-new-div {
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 5px 10px;
+    background-color: #e7f5fe;
+}
+

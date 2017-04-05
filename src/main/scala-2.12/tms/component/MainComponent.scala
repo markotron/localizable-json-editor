@@ -1,13 +1,10 @@
 package tms.component
 
 import japgolly.scalajs.react.component.Scala.BackendScope
-import japgolly.scalajs.react
 import japgolly.scalajs.react.Callback
 import japgolly.scalajs.react.vdom.VdomElement
 import japgolly.scalajs.react.vdom.html_<^._
 import tms.model.LocalizableJson
-
-import scala.collection.mutable
 
 /**
   * Created by markotron on 19/03/2017.
@@ -30,6 +27,16 @@ class MainBackend(bs: BackendScope[List[String], MainState]) {
     bs.modState { s =>
       s.history.headOption
         .map(_.upsertElement(oldJson, newJson))
+        .map(h => MainState(h :: s.history))
+        .getOrElse(s)
+    }
+
+  def onAdd(where: LocalizableJson,
+            key: String,
+            what: LocalizableJson): Callback =
+    bs.modState { s =>
+      s.history.headOption
+        .map(_.upsertElement(where, what, Some(key)))
         .map(h => MainState(h :: s.history))
         .getOrElse(s)
     }
@@ -57,9 +64,9 @@ class MainBackend(bs: BackendScope[List[String], MainState]) {
           state.history.head,
           prop,
           onDelete,
-          onUpdate
+          onUpdate,
+          onAdd
         )
       )
     )
 }
-
