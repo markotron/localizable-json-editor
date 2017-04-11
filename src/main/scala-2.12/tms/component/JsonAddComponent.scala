@@ -42,27 +42,25 @@ class JsonAddBackend(bs: BackendScope[JsonAddProperties, JsonAddState]) {
     bs.modState(s => s.copy(key = text))
   }
 
-  def onKeyUp(event: ReactKeyboardEventFromInput): Callback = {
+  private def clearAndAddWithKey(prop: JsonAddProperties, key: String) =
+    prop.hide >> (createObject >>= (prop.onAdd(prop.json, key, _))) >> bs
+      .setState(JsonAddState("", RichLocalizableJson.O))
+
+  def onKeyUp(prop: JsonAddProperties)(
+      event: ReactKeyboardEventFromInput): Callback = {
     val text = event.target.value
     if (event.keyCode == 13 && text.trim != "")
-      (bs.props >>= ((p: JsonAddProperties) =>
-        p.hide >> createObject >>= (p.onAdd(p.json, text, _)))) >>
-        bs.setState(JsonAddState("", RichLocalizableJson.O))
+      clearAndAddWithKey(prop, text)
     else
       Callback.empty
   }
 
-  def changeCurrentType(prop: JsonAddProperties)(
+  def changeCurrentType(prop: JsonAddProperties, state: JsonAddState)(
       selectedType: Class[_ <: LocalizableJson]): Callback =
     bs.modState(
       s => s.copy(selectedType = selectedType),
-      bs.state >>= (
-          s =>
-            if (s.key.trim == "") Callback.empty
-            else
-              (prop.hide >> createObject >>= (prop
-                .onAdd(prop.json, s.key, _))) >> bs.setState(
-                JsonAddState("", RichLocalizableJson.O)))
+      if (state.key.trim == "") Callback.empty
+      else clearAndAddWithKey(prop, state.key)
     )
 
   def render(prop: JsonAddProperties, state: JsonAddState): VdomElement = {
@@ -72,14 +70,14 @@ class JsonAddBackend(bs: BackendScope[JsonAddProperties, JsonAddState]) {
               ^.`type` := "text",
               ^.value := state.key,
               ^.onChange ==> onChange,
-              ^.onKeyUp ==> onKeyUp),
+              ^.onKeyUp ==> onKeyUp(prop)),
       <.span(
         ^.classSet(
           "type-tag-span" -> true,
           "type-tag-span-selected" -> state.selectedType.equals(
             RichLocalizableJson.O)
         ),
-        ^.onClick --> changeCurrentType(prop)(RichLocalizableJson.O),
+        ^.onClick --> changeCurrentType(prop, state)(RichLocalizableJson.O),
         "object"
       ),
       <.span(
@@ -88,7 +86,7 @@ class JsonAddBackend(bs: BackendScope[JsonAddProperties, JsonAddState]) {
           "type-tag-span-selected" -> state.selectedType.equals(
             RichLocalizableJson.S)
         ),
-        ^.onClick --> changeCurrentType(prop)(RichLocalizableJson.S),
+        ^.onClick --> changeCurrentType(prop, state)(RichLocalizableJson.S),
         "string"
       ),
       <.span(
@@ -97,7 +95,7 @@ class JsonAddBackend(bs: BackendScope[JsonAddProperties, JsonAddState]) {
           "type-tag-span-selected" -> state.selectedType.equals(
             RichLocalizableJson.D)
         ),
-        ^.onClick --> changeCurrentType(prop)(RichLocalizableJson.D),
+        ^.onClick --> changeCurrentType(prop, state)(RichLocalizableJson.D),
         "number"
       ),
       <.span(
@@ -106,7 +104,7 @@ class JsonAddBackend(bs: BackendScope[JsonAddProperties, JsonAddState]) {
           "type-tag-span-selected" -> state.selectedType.equals(
             RichLocalizableJson.B)
         ),
-        ^.onClick --> changeCurrentType(prop)(RichLocalizableJson.B),
+        ^.onClick --> changeCurrentType(prop, state)(RichLocalizableJson.B),
         "boolean"
       )
     )
